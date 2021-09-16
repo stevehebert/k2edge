@@ -7,30 +7,26 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/stevehebert/frontsidecache/internal/persistence"
 
 	"net/http"
 )
 
 type Server struct {
-	Interaction Interaction
+	StorageFacade persistence.StorageFacade
 
 	Server *http.Server
 	Log    *log.Logger
 }
 
-type Interaction interface {
-	Get(key string) (value []byte, err error)
-	Set(key []byte, value []byte) error
-	GetMetrics() interface{}
-	Ready(cxt context.Context) bool
-}
+func New(storageFacade persistence.StorageFacade, address string) *Server {
 
-func New(interaction Interaction, address string) *Server {
 	context := Server{
-		Interaction: interaction,
+		StorageFacade: storageFacade,
 	}
+
 	m := mux.NewRouter()
-	m.Methods("GET")
+	//m.Methods("GET")
 	m.HandleFunc("/key/{key}", context.GetByKey)
 	m.HandleFunc("/metrics", context.GetMetrics)
 
@@ -53,7 +49,7 @@ func (c *Server) GetByKey(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	key := vars["key"]
-	result, err := c.Interaction.Get(key)
+	result, err := c.StorageFacade.Get(key)
 
 	if err == nil && len(result) == 0 {
 		w.WriteHeader(http.StatusNotFound)
@@ -75,7 +71,7 @@ func (c *Server) Live(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Server) Ready(w http.ResponseWriter, r *http.Request) {
-	ready := c.Interaction.Ready(r.Context())
+	ready := c.StorageFacade.Ready(r.Context())
 
 	if !ready {
 		w.WriteHeader(http.StatusServiceUnavailable)
@@ -85,7 +81,7 @@ func (c *Server) Ready(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Server) GetMetrics(w http.ResponseWriter, r *http.Request) {
-	metrics := c.Interaction.GetMetrics()
+	metrics := c.StorageFacade.GetMetrics()
 
 	responseBytes, _ := json.Marshal(metrics)
 
@@ -96,5 +92,19 @@ func (c *Server) GetMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Server) Start(ctx context.Context) error {
-	return c.Server.ListenAndServe()
+	//fmt.Println("listening")
+	return http.ListenAndServe(":80", c.Server.Handler)
+	//return c.Server.ListenAndServe()
+
+	/*r := mux.NewRouter()
+
+	r.HandleFunc("/books/{title}/page/{page}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		title := vars["title"]
+		page := vars["page"]
+
+		fmt.Fprintf(w, "You've requested the book: %s on page %s\n", title, page)
+	})
+
+	return http.ListenAndServe(":80", r)*/
 }

@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
-	"github.com/dgraph-io/badger/v3"
 	"github.com/spf13/cobra"
+	"github.com/stevehebert/frontsidecache/http"
 	"github.com/stevehebert/frontsidecache/internal/badgerstore"
 )
 
@@ -21,25 +22,20 @@ var rootCmd = &cobra.Command{
 			fmt.Println("connected")
 		}
 
-		err := b.Update(func(txn *badger.Txn) error {
-			fmt.Println("writing")
-			return txn.Set([]byte("answer"), []byte("42"))
-		})
+		err := b.Set([]byte("answer"), []byte("42"))
 
 		fmt.Println(err)
 
-		err = b.Update(func(txn *badger.Txn) error {
-			fmt.Println("writing")
-			return txn.Set([]byte("answer"), []byte("43"))
-		})
+		err = b.Set([]byte("answer"), []byte("43"))
 
 		fmt.Println(err)
 
 		if err != nil {
 			fmt.Println(err)
 		}
+		s := http.New(b, ":http")
+		s.Start(context.Background())
 
-		// Do Stuff Here
 	},
 }
 
