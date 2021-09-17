@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -49,6 +50,7 @@ func (c *Server) GetByKey(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	key := vars["key"]
+	fmt.Println(key)
 	result, err := c.StorageFacade.Get(key)
 
 	if err == nil && len(result) == 0 {
@@ -93,7 +95,7 @@ func (c *Server) GetMetrics(w http.ResponseWriter, r *http.Request) {
 
 func (c *Server) Start(ctx context.Context) error {
 	//fmt.Println("listening")
-	return http.ListenAndServe(":80", c.Server.Handler)
+	return http.ListenAndServe(":8080", c.Server.Handler)
 	//return c.Server.ListenAndServe()
 
 	/*r := mux.NewRouter()
