@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/stevehebert/frontsidecache/internal/persistence"
+	"github.com/stevehebert/k2edge/internal/persistence"
 )
 
 type badgerStore struct {

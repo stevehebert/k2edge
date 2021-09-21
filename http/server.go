@@ -3,12 +3,11 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/stevehebert/frontsidecache/internal/persistence"
+	"github.com/stevehebert/k2edge/internal/persistence"
 
 	"net/http"
 )
@@ -50,7 +49,6 @@ func (c *Server) GetByKey(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	key := vars["key"]
-	fmt.Println(key)
 	result, err := c.StorageFacade.Get(key)
 
 	if err == nil && len(result) == 0 {

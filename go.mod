@@ -1,4 +1,4 @@
-module github.com/stevehebert/frontsidecache
+module github.com/stevehebert/k2edge
 
 go 1.17
 

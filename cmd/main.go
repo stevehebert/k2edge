@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/stevehebert/frontsidecache/http"
-	"github.com/stevehebert/frontsidecache/internal/badgerstore"
+	"github.com/stevehebert/k2edge/http"
+	"github.com/stevehebert/k2edge/internal/badgerstore"
 )
 
 var rootCmd = &cobra.Command{
