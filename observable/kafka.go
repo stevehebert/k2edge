@@ -36,21 +36,22 @@ func systemMonitor(cancelFunc context.CancelFunc) {
 // KafkaObservable takes a kafka consumer and turns it into an rx observable.
 func KafkaObservable(consumer *kafka.Consumer) func(context.Context, chan<- rxgo.Item) {
 	return func(ctx context.Context, ch chan<- rxgo.Item) {
-		cancellable, cancelFunc := context.WithCancel(context.Background())
+		_, cancelFunc := context.WithCancel(context.Background())
 		go systemMonitor(cancelFunc)
 		for {
 			msg, err := consumer.ReadMessage(500)
 			if err == nil {
+				//fmt.Print(".")
 				ch <- rxgo.Of(msg)
-			} else {
+			} /*else {
 				if err.(kafka.Error).Code() == kafka.ErrTimedOut {
 					if cancellable.Err() != nil {
 						// in this case, the context cancelation is set and we need to close the observable.
-						close(ch)
+						//close(ch)
 					}
 				}
 				ch <- rxgo.Error(err)
-			}
+			}*/
 		}
 	}
 

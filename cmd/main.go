@@ -18,21 +18,6 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		b, _ := badgerstore.Connect()
 
-		if b != nil {
-			fmt.Println("connected")
-		}
-
-		err := b.Set([]byte("answer"), []byte("42"))
-
-		fmt.Println(err)
-
-		err = b.Set([]byte("answer"), []byte("43"))
-
-		fmt.Println(err)
-
-		if err != nil {
-			fmt.Println(err)
-		}
 		s := http.New(b, ":http")
 		s.Start(context.Background())
 

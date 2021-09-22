@@ -3,11 +3,15 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/gorilla/mux"
+	"github.com/reactivex/rxgo/v2"
 	"github.com/stevehebert/k2edge/internal/persistence"
+	"github.com/stevehebert/k2edge/observable"
 
 	"net/http"
 )
@@ -19,7 +23,39 @@ type Server struct {
 	Log    *log.Logger
 }
 
+func mapToStorage(storageFacade persistence.StorageFacade) func(context.Context, interface{}) (interface{}, error) {
+	return func(_ context.Context, item interface{}) (interface{}, error) {
+		msg, convert := item.(*kafka.Message)
+		if !convert {
+			panic("bad read from kafka")
+		}
+		storageFacade.Set(msg.Key, msg.Value)
+		return item, nil
+	}
+}
+
 func New(storageFacade persistence.StorageFacade, address string) *Server {
+	c, err := observable.KafkaConnect(&kafka.ConfigMap{
+		"bootstrap.servers": "127.0.0.1:29092",
+		"group.id":          "aa",
+		"auto.offset.reset": "earliest",
+	}, []string{"incoming"})
+
+	if err != nil {
+		return nil
+	}
+
+	go func(consumer *kafka.Consumer) {
+		fmt.Println("starting")
+		obs := rxgo.Defer([]rxgo.Producer{observable.KafkaObservable(consumer)}).
+			Map(mapToStorage(storageFacade))
+
+		for o := range obs.Observe() {
+			if o.Error() {
+				fmt.Print("e")
+			}
+		}
+	}(c)
 
 	context := Server{
 		StorageFacade: storageFacade,

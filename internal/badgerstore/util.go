@@ -2,7 +2,6 @@ package badgerstore
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
@@ -38,7 +37,6 @@ func (bi *badgerStore) Get(key string) (value []byte, err error) {
 }
 
 func (bi *badgerStore) Set(key []byte, value []byte) error {
-	fmt.Println("setting")
 	if key == nil {
 		return nil
 	}
@@ -52,8 +50,7 @@ func (bi *badgerStore) Set(key []byte, value []byte) error {
 }
 
 func (bi *badgerStore) GetMetrics() interface{} {
-	return nil
-
+	return bi.GetMetrics()
 }
 
 func (bi *badgerStore) Ready(cxt context.Context) bool {
